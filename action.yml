@@ -1,0 +1,48 @@
+name: Haskell Autotag
+author: Simon Hengel
+description: Create a Git tag on `.cabal` version bumps
+
+branding:
+  icon: tag
+  color: white
+
+inputs:
+  package-path:
+    default: .
+
+  tag-prefix:
+    default: v
+
+  tag-pre-releases:
+    default: false
+
+  dry-run:
+    default: false
+
+outputs:
+  created:
+    value: ${{ steps.git-tag.outputs.created }}
+
+  tag-name:
+    value: ${{ steps.git-tag.outputs.tag-name }}
+
+  version:
+    value: ${{ steps.git-tag.outputs.version }}
+
+  version-tags:
+    value: ${{ steps.git-tag.outputs.version-tags }}
+
+  version-with-tags:
+    value: ${{ steps.git-tag.outputs.version-with-tags }}
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: echo :main | ghc --interactive -v0 ${{ github.action_path }}/src/GitTag.hs
+      id: git-tag
+      env:
+        TAG_PREFIX: ${{ inputs.tag-prefix }}
+        PACKAGE_PATH: ${{ inputs.package-path }}
+        TAG_PRE_RELEASES: ${{ inputs.tag-pre-releases }}
+        DRY_RUN: ${{ inputs.dry-run }}
