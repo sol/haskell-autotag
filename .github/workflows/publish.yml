@@ -3,11 +3,24 @@ name: publish
 on:
   push:
     branches:
-      - main
+      - dev
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: git tag v1 && git push --tags -f
+
+      - uses: sol/haskell-autotag@dev
+        id: autotag
+        with:
+          dry-run: true
+          pre-releases: true
+          prefix:
+
+      - run: cabal sdist
+      - uses: haskell-actions/hackage-publish@v1.1
+        with:
+          hackageToken: ${{ secrets.HACKAGE_AUTH_TOKEN }}
+          publish: false
+        if: steps.autotag.outputs.created
