@@ -46,3 +46,13 @@ runs:
         PACKAGE_PATH: ${{ inputs.package-path }}
         TAG_PRE_RELEASES: ${{ inputs.tag-pre-releases }}
         DRY_RUN: ${{ inputs.dry-run }}
+
+    - shell: bash
+      run: |
+        echo ::group::outputs
+        echo "created: ${{ steps.autotag.outputs.created }}"
+        echo "tag-name: ${{ steps.autotag.outputs.tag-name }}"
+        echo "version: ${{ steps.autotag.outputs.version }}"
+        echo "version-tags: ${{ steps.autotag.outputs.version-tags }}"
+        echo "version-with-tags: ${{ steps.autotag.outputs.version-with-tags }}"
+        echo ::endgroup::
