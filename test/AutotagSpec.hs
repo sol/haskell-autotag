@@ -52,9 +52,9 @@ spec = do
               : versionOutputs "0.1.0"
               )
 
-        context "with PACKAGE_PATH" $ do
+        context "with AUTOTAG_PACKAGE_PATH" $ do
           it "extracts the version from the specified package" $ do
-            withEnvironment [("PACKAGE_PATH", "./foo/")] $ do
+            withEnvironment [("AUTOTAG_PACKAGE_PATH", "./foo/")] $ do
               touch "foo/package.cabal"
               writeFile "foo/package.cabal" "version: 0.2.0"
               shouldCreateTag "v0.2.0" $ versionOutputs "0.2.0"
@@ -70,9 +70,9 @@ spec = do
               setEnv "AUTOTAG_PREFIX" "" True
               shouldCreateTag "0.1.0" $ versionOutputs "0.1.0"
 
-        context "with DRY_RUN=true" $ do
+        context "with AUTOTAG_DRY_RUN=true" $ do
           it "does not create any tag" $ do
-            withEnvironment [("DRY_RUN", "true")] $ do
+            withEnvironment [("AUTOTAG_DRY_RUN", "true")] $ do
               shouldNotCreateTag $
                   setOutput "created" "true"
                 : setOutput "name" "v0.1.0"
@@ -92,9 +92,9 @@ spec = do
               setOutput "name" "v0.1.0-pre-alpha"
             : versionOutputs
 
-        context "with TAG_PRE_RELEASES=true" $ do
+        context "with AUTOTAG_PRE_RELEASES=true" $ do
           it "creates a tag" $ do
-            withEnvironment [("TAG_PRE_RELEASES", "true")] $ do
+            withEnvironment [("AUTOTAG_PRE_RELEASES", "true")] $ do
               shouldCreateTag "v0.1.0-pre-alpha" versionOutputs
 
     context "without a .cabal" $ do

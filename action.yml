@@ -43,9 +43,9 @@ runs:
       id: autotag
       env:
         AUTOTAG_PREFIX: ${{ inputs.prefix }}
-        PACKAGE_PATH: ${{ inputs.package-path }}
-        TAG_PRE_RELEASES: ${{ inputs.tag-pre-releases }}
-        DRY_RUN: ${{ inputs.dry-run }}
+        AUTOTAG_PACKAGE_PATH: ${{ inputs.package-path }}
+        AUTOTAG_PRE_RELEASES: ${{ inputs.tag-pre-releases }}
+        AUTOTAG_DRY_RUN: ${{ inputs.dry-run }}
 
     - shell: bash
       run: |

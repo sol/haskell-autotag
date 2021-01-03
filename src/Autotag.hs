@@ -27,10 +27,10 @@ die err = throwIO (ErrorCall err)
 
 run :: CreateTag -> IO ()
 run create = do
-  dir <- getEnv "PACKAGE_PATH"
+  dir <- getEnv "AUTOTAG_PACKAGE_PATH"
 
-  tagPreReleases <- (== Just "true") <$> getEnv "TAG_PRE_RELEASES"
-  dryRun <- (== Just "true") <$> getEnv "DRY_RUN"
+  tagPreReleases <- (== Just "true") <$> getEnv "AUTOTAG_PRE_RELEASES"
+  dryRun <- (== Just "true") <$> getEnv "AUTOTAG_DRY_RUN"
 
   v@(Version branch tags) <- packageVersion dir
 
