@@ -39,7 +39,7 @@ runs:
   using: composite
   steps:
     - shell: bash
-      run: echo :main | ghc --interactive -v0 ${{ github.action_path }}/src/Autotag.hs
+      run: '"$(dirname $(readlink --canonicalize $(which ghc)))/runhaskell" ${{ github.action_path }}/src/Autotag.hs'
       id: autotag
       env:
         AUTOTAG_PREFIX: ${{ inputs.prefix }}
