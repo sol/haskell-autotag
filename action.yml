@@ -13,7 +13,7 @@ inputs:
   prefix:
     default: v
 
-  tag-pre-releases:
+  pre-releases:
     default: false
 
   dry-run:
@@ -44,7 +44,7 @@ runs:
       env:
         AUTOTAG_PREFIX: ${{ inputs.prefix }}
         AUTOTAG_PACKAGE_PATH: ${{ inputs.package-path }}
-        AUTOTAG_PRE_RELEASES: ${{ inputs.tag-pre-releases }}
+        AUTOTAG_PRE_RELEASES: ${{ inputs.pre-releases }}
         AUTOTAG_DRY_RUN: ${{ inputs.dry-run }}
 
     - shell: bash
