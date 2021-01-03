@@ -34,7 +34,7 @@ run create = do
 
   v@(Version branch tags) <- packageVersion dir
 
-  prefix <- fromMaybe "v" <$> getEnv "TAG_PREFIX"
+  prefix <- fromMaybe "v" <$> getEnv "AUTOTAG_PREFIX"
   let version = showVersion (makeVersion branch)
       versionWithTags = showVersion v
       tagName = prefix <> versionWithTags

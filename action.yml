@@ -10,7 +10,7 @@ inputs:
   package-path:
     default: .
 
-  tag-prefix:
+  prefix:
     default: v
 
   tag-pre-releases:
@@ -42,7 +42,7 @@ runs:
       run: echo :main | ghc --interactive -v0 ${{ github.action_path }}/src/Autotag.hs
       id: autotag
       env:
-        TAG_PREFIX: ${{ inputs.tag-prefix }}
+        AUTOTAG_PREFIX: ${{ inputs.prefix }}
         PACKAGE_PATH: ${{ inputs.package-path }}
         TAG_PRE_RELEASES: ${{ inputs.tag-pre-releases }}
         DRY_RUN: ${{ inputs.dry-run }}
