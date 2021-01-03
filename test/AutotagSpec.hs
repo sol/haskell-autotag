@@ -14,7 +14,7 @@ shouldCreateTag :: HasCallStack => String -> [String] -> Expectation
 shouldCreateTag tagName outputs = do
   capture_ (run createTag) `shouldReturn` unlines (
       setOutput "created" "true"
-    : setOutput "tag-name" tagName
+    : setOutput "name" tagName
     : outputs
     )
   where
@@ -48,7 +48,7 @@ spec = do
           it "does not set 'created'" $ do
             let createTag _ = return TagAlreadyExists
             capture_ (run createTag) `shouldReturn` unlines (
-                setOutput "tag-name" "v0.1.0"
+                setOutput "name" "v0.1.0"
               : versionOutputs "0.1.0"
               )
 
@@ -75,7 +75,7 @@ spec = do
             withEnvironment [("DRY_RUN", "true")] $ do
               shouldNotCreateTag $
                   setOutput "created" "true"
-                : setOutput "tag-name" "v0.1.0"
+                : setOutput "name" "v0.1.0"
                 : versionOutputs "0.1.0"
 
     context "with a .cabal file with version tags" $ do
@@ -89,7 +89,7 @@ spec = do
 
         it "does not create a tag" $ do
           shouldNotCreateTag $
-              setOutput "tag-name" "v0.1.0-pre-alpha"
+              setOutput "name" "v0.1.0-pre-alpha"
             : versionOutputs
 
         context "with TAG_PRE_RELEASES=true" $ do

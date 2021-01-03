@@ -23,8 +23,8 @@ outputs:
   created:
     value: ${{ steps.autotag.outputs.created }}
 
-  tag-name:
-    value: ${{ steps.autotag.outputs.tag-name }}
+  name:
+    value: ${{ steps.autotag.outputs.name }}
 
   version:
     value: ${{ steps.autotag.outputs.version }}
@@ -51,7 +51,7 @@ runs:
       run: |
         echo ::group::outputs
         echo "created: ${{ steps.autotag.outputs.created }}"
-        echo "tag-name: ${{ steps.autotag.outputs.tag-name }}"
+        echo "name: ${{ steps.autotag.outputs.name }}"
         echo "version: ${{ steps.autotag.outputs.version }}"
         echo "version-tags: ${{ steps.autotag.outputs.version-tags }}"
         echo "version-with-tags: ${{ steps.autotag.outputs.version-with-tags }}"

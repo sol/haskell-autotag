@@ -43,7 +43,7 @@ run create = do
     r <- if dryRun then return TagCreated else create tagName
     when (r == TagCreated) $ do
       setOutput "created" "true"
-  setOutput "tag-name" tagName
+  setOutput "name" tagName
   setOutput "version" version
   setOutput "version-tags" (intercalate "-" tags)
   setOutput "version-with-tags" versionWithTags
