@@ -59,15 +59,15 @@ spec = do
               writeFile "foo/package.cabal" "version: 0.2.0"
               shouldCreateTag "v0.2.0" $ versionOutputs "0.2.0"
 
-        context "with TAG_PREFIX" $ do
+        context "with AUTOTAG_PREFIX" $ do
           it "uses specified tag prefix" $ do
-            withEnvironment [("TAG_PREFIX", "version-")] $ do
+            withEnvironment [("AUTOTAG_PREFIX", "version-")] $ do
               shouldCreateTag "version-0.1.0" $ versionOutputs "0.1.0"
 
-        context "with TAG_PREFIX=" $ do
+        context "with AUTOTAG_PREFIX=" $ do
           it "does not use any tag prefix" $ do
             withEnvironment [] $ do
-              setEnv "TAG_PREFIX" "" True
+              setEnv "AUTOTAG_PREFIX" "" True
               shouldCreateTag "0.1.0" $ versionOutputs "0.1.0"
 
         context "with DRY_RUN=true" $ do
