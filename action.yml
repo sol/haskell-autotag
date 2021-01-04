@@ -39,6 +39,8 @@ runs:
   using: composite
   steps:
     - shell: bash
+      run: git fetch --tags 2> /dev/null
+    - shell: bash
       run: '"$(dirname $(readlink --canonicalize $(which ghc)))/runhaskell" ${{ github.action_path }}/src/Autotag.hs'
       id: autotag
       env:

@@ -13,7 +13,6 @@ import           Data.List
 import           Data.Maybe
 import           Data.Version
 import           System.Environment.Blank
-import           System.Exit hiding (die)
 import           System.Process
 import           System.Directory
 import           System.FilePath
@@ -114,22 +113,11 @@ data TagCreated = TagCreated | TagAlreadyExists
   deriving (Eq, Show)
 
 createTag :: CreateTag
-createTag name = withGitTag $ withGitPushTags $ return TagCreated
-  where
-    withGitTag :: IO TagCreated -> IO TagCreated
-    withGitTag action = callProcessWithExitCode "git" ["tag", name] >>= \ case
-      ExitSuccess -> action
-      ExitFailure 128 -> return TagAlreadyExists
-      e -> throwIO e
-
-    withGitPushTags :: IO TagCreated -> IO TagCreated
-    withGitPushTags action = callProcessWithExitCode "git" ["push", "--tags"] >>= \ case
-      ExitSuccess -> action
-      ExitFailure 1 -> return TagAlreadyExists
-      e -> throwIO e
-
-    callProcessWithExitCode :: FilePath -> [String] -> IO ExitCode
-    callProcessWithExitCode cmd args = withCreateProcess process wait
-      where
-        process = (proc cmd args) {delegate_ctlc = True}
-        wait _ _ _ = waitForProcess
+createTag name = do
+  tags <- lines <$> readProcess "git" ["tag"] ""
+  if name `elem` tags then do
+    return TagAlreadyExists
+  else do
+    callProcess "git" ["tag", name]
+    callProcess "git" ["push", "--tags"]
+    return TagCreated
