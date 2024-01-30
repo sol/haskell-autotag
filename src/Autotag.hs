@@ -48,7 +48,12 @@ run create = do
   setOutput "version-with-tags" versionWithTags
 
 setOutput :: String -> String -> IO ()
-setOutput name value = putStrLn $ "::set-output name=" <> name <> "::" <> value
+setOutput name value = do
+  mOutputFile <- getEnv "GITHUB_OUTPUT"
+  case mOutputFile of
+    Nothing -> die "Couldn't read $GITHUB_OUTPUT"
+    Just outputFile ->
+      appendFile outputFile (name <> "=" <> value <> "\n")
 
 packageVersion :: Maybe FilePath -> IO Version
 packageVersion dir = do
