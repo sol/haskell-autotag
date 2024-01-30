@@ -4,7 +4,6 @@ import           Test.Hspec
 import           Test.Mockery.Directory
 import           Test.Mockery.Environment
 import           System.Environment.Blank
-import           System.IO.Silently
 
 import           Data.Version
 
@@ -12,7 +11,8 @@ import           Autotag
 
 shouldCreateTag :: HasCallStack => String -> [String] -> Expectation
 shouldCreateTag tagName outputs = do
-  capture_ (run createTag) `shouldReturn` unlines (
+  run createTag
+  getOutputs `shouldReturn` (
       setOutput "created" "true"
     : setOutput "name" tagName
     : outputs
@@ -23,17 +23,32 @@ shouldCreateTag tagName outputs = do
       return TagCreated
 
 shouldNotCreateTag :: HasCallStack => [String] -> Expectation
-shouldNotCreateTag outputs = capture_ (run undefined) `shouldReturn` unlines outputs
+shouldNotCreateTag outputs = do
+  run undefined
+  getOutputs `shouldReturn` outputs
+
+getOutputs :: IO [String]
+getOutputs = do
+  mOutputFile <- getEnv "GITHUB_OUTPUT"
+  case mOutputFile of
+    Nothing -> return []
+    Just outputFile ->
+      lines <$> readFile outputFile
 
 setOutput :: String -> String -> String
-setOutput name value = "::set-output name=" <> name <> "::" <> value
+setOutput name value = name <> "=" <> value
 
 spec :: Spec
 spec = do
   describe "run" $ around_ inTempDirectory $ do
 
     context "with a .cabal file" $ do
-      before_ (writeFile "package.cabal" "version: 0.1.0") $ do
+      let setupEnv = do
+             writeFile "package.cabal" "version: 0.1.0"
+             writeFile "outputs" ""
+             setEnv "GITHUB_OUTPUT" "outputs" True
+
+      before_ setupEnv  $ do
         let versionOutputs :: String -> [String]
             versionOutputs version = [
                 setOutput "version" version
@@ -47,40 +62,45 @@ spec = do
         context "when tag already exists" $ do
           it "does not set 'created'" $ do
             let createTag _ = return TagAlreadyExists
-            capture_ (run createTag) `shouldReturn` unlines (
+            run createTag
+            getOutputs `shouldReturn` (
                 setOutput "name" "v0.1.0"
               : versionOutputs "0.1.0"
               )
 
         context "with AUTOTAG_PACKAGE_PATH" $ do
           it "extracts the version from the specified package" $ do
-            withEnvironment [("AUTOTAG_PACKAGE_PATH", "./foo/")] $ do
+            withModifiedEnvironment [("AUTOTAG_PACKAGE_PATH", "./foo/")] $ do
               touch "foo/package.cabal"
               writeFile "foo/package.cabal" "version: 0.2.0"
               shouldCreateTag "v0.2.0" $ versionOutputs "0.2.0"
 
         context "with AUTOTAG_PREFIX" $ do
           it "uses specified tag prefix" $ do
-            withEnvironment [("AUTOTAG_PREFIX", "version-")] $ do
+            withModifiedEnvironment [("AUTOTAG_PREFIX", "version-")] $ do
               shouldCreateTag "version-0.1.0" $ versionOutputs "0.1.0"
 
         context "with AUTOTAG_PREFIX=" $ do
           it "does not use any tag prefix" $ do
-            withEnvironment [] $ do
+            withModifiedEnvironment [] $ do
               setEnv "AUTOTAG_PREFIX" "" True
               shouldCreateTag "0.1.0" $ versionOutputs "0.1.0"
 
         context "with AUTOTAG_DRY_RUN=true" $ do
           it "does not create any tag" $ do
-            withEnvironment [("AUTOTAG_DRY_RUN", "true")] $ do
+            withModifiedEnvironment [("AUTOTAG_DRY_RUN", "true")] $ do
               shouldNotCreateTag $
                   setOutput "created" "true"
                 : setOutput "name" "v0.1.0"
                 : versionOutputs "0.1.0"
 
     context "with a .cabal file with version tags" $ do
-      before_ (writeFile "package.cabal" "version: 0.1.0-pre-alpha") $ do
+      let setupEnv = do
+             writeFile "package.cabal" "version: 0.1.0-pre-alpha"
+             writeFile "outputs" ""
+             setEnv "GITHUB_OUTPUT" "outputs" True
 
+      before_ setupEnv $ do
         let versionOutputs = [
                 setOutput "version" "0.1.0"
               , setOutput "version-tags" "pre-alpha"
@@ -94,7 +114,7 @@ spec = do
 
         context "with AUTOTAG_PRE_RELEASES=true" $ do
           it "creates a tag" $ do
-            withEnvironment [("AUTOTAG_PRE_RELEASES", "true")] $ do
+            withModifiedEnvironment [("AUTOTAG_PRE_RELEASES", "true")] $ do
               shouldCreateTag "v0.1.0-pre-alpha" versionOutputs
 
     context "without a .cabal" $ do

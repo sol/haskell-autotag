@@ -30,4 +30,3 @@ tests:
       - autotag
       - hspec == 2.*
       - mockery
-      - silently
