@@ -3,6 +3,7 @@ module Autotag (
   main
 , TagCreated(..)
 , run
+, getOutputFile
 , extractVersion
 ) where
 
@@ -12,6 +13,7 @@ import           Data.Char
 import           Data.List
 import           Data.Maybe
 import           Data.Version
+import qualified System.Environment as Force (getEnv)
 import           System.Environment.Blank
 import           System.Process
 import           System.Directory
@@ -49,11 +51,11 @@ run create = do
 
 setOutput :: String -> String -> IO ()
 setOutput name value = do
-  mOutputFile <- getEnv "GITHUB_OUTPUT"
-  case mOutputFile of
-    Nothing -> die "Couldn't read $GITHUB_OUTPUT"
-    Just outputFile ->
-      appendFile outputFile (name <> "=" <> value <> "\n")
+  outputFile <- getOutputFile
+  appendFile outputFile $ name <> "=" <> value <> "\n"
+
+getOutputFile :: IO FilePath
+getOutputFile = Force.getEnv "GITHUB_OUTPUT"
 
 packageVersion :: Maybe FilePath -> IO Version
 packageVersion dir = do
