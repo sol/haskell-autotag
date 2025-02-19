@@ -18,9 +18,9 @@ jobs:
           pre-releases: true
           prefix:
 
-      - run: cabal sdist
-      - uses: haskell-actions/hackage-publish@v1.1
-        with:
-          hackageToken: ${{ secrets.HACKAGE_AUTH_TOKEN }}
-          publish: false
-        if: steps.autotag.outputs.created
+      # - run: cabal sdist
+      # - uses: haskell-actions/hackage-publish@v1.1
+      #   with:
+      #     hackageToken: ${{ secrets.HACKAGE_AUTH_TOKEN }}
+      #     publish: false
+      #   if: steps.autotag.outputs.created
