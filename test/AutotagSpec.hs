@@ -7,12 +7,17 @@ import           System.Environment.Blank
 
 import           Data.Version
 
-import           Autotag
+import           Autotag hiding (run)
+import qualified Autotag
+
+run :: (String -> IO TagCreated) -> IO String
+run createTag = do
+  Autotag.run createTag
+  getOutputFile >>= readFile
 
 shouldCreateTag :: HasCallStack => String -> [String] -> Expectation
 shouldCreateTag tagName outputs = do
-  run createTag
-  getOutputs `shouldReturn` (
+  run createTag `shouldReturn` unlines (
       setOutput "created" "true"
     : setOutput "name" tagName
     : outputs
@@ -23,32 +28,17 @@ shouldCreateTag tagName outputs = do
       return TagCreated
 
 shouldNotCreateTag :: HasCallStack => [String] -> Expectation
-shouldNotCreateTag outputs = do
-  run undefined
-  getOutputs `shouldReturn` outputs
-
-getOutputs :: IO [String]
-getOutputs = do
-  mOutputFile <- getEnv "GITHUB_OUTPUT"
-  case mOutputFile of
-    Nothing -> return []
-    Just outputFile ->
-      lines <$> readFile outputFile
+shouldNotCreateTag outputs = run undefined `shouldReturn` unlines outputs
 
 setOutput :: String -> String -> String
 setOutput name value = name <> "=" <> value
 
 spec :: Spec
 spec = do
-  describe "run" $ around_ inTempDirectory $ do
+  describe "run" $ around_ (inTempDirectory . withEnvironment [("GITHUB_OUTPUT", "outputs")]) $ do
 
     context "with a .cabal file" $ do
-      let setupEnv = do
-             writeFile "package.cabal" "version: 0.1.0"
-             writeFile "outputs" ""
-             setEnv "GITHUB_OUTPUT" "outputs" True
-
-      before_ setupEnv  $ do
+      before_ (writeFile "package.cabal" "version: 0.1.0") $ do
         let versionOutputs :: String -> [String]
             versionOutputs version = [
                 setOutput "version" version
@@ -62,8 +52,7 @@ spec = do
         context "when tag already exists" $ do
           it "does not set 'created'" $ do
             let createTag _ = return TagAlreadyExists
-            run createTag
-            getOutputs `shouldReturn` (
+            run createTag `shouldReturn` unlines (
                 setOutput "name" "v0.1.0"
               : versionOutputs "0.1.0"
               )
@@ -95,12 +84,8 @@ spec = do
                 : versionOutputs "0.1.0"
 
     context "with a .cabal file with version tags" $ do
-      let setupEnv = do
-             writeFile "package.cabal" "version: 0.1.0-pre-alpha"
-             writeFile "outputs" ""
-             setEnv "GITHUB_OUTPUT" "outputs" True
+      before_ (writeFile "package.cabal" "version: 0.1.0-pre-alpha") $ do
 
-      before_ setupEnv $ do
         let versionOutputs = [
                 setOutput "version" "0.1.0"
               , setOutput "version-tags" "pre-alpha"
